@@ -9,7 +9,6 @@ typedef bool (*BinaryOperator)(const void *, const void *, void *);
 
 typedef struct {
     size_t size;
-    char *name;
     UnaryOperator assign;
     BinaryOperator sum;
     BinaryOperator mult;

@@ -2,21 +2,20 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <stdio.h>
 
-MathVector *create_math_vector(size_t dimension, const FieldInfo *field_info) {
-    if (field_info == NULL) {
+MathVector *create_math_vector(const size_t dimension, const FieldInfo *field_info) {
+    if (field_info == NULL || dimension <= 0) {
         errno = EINVAL;
         return NULL;
     }
 
-    MathVector *math_vector = (MathVector *) malloc(sizeof(MathVector));
+    MathVector *math_vector = malloc(sizeof(MathVector));
     if (math_vector == NULL) {
         errno = ENOMEM;
         return NULL;
     }
 
-    math_vector->dimension = dimension;
+    *(size_t *) &math_vector->dimension = dimension;
     math_vector->field_info = field_info;
     math_vector->data = malloc(dimension * field_info->size);;
     if (math_vector->data == NULL) {
@@ -28,7 +27,7 @@ MathVector *create_math_vector(size_t dimension, const FieldInfo *field_info) {
     return math_vector;
 }
 
-void *get_value(const MathVector *math_vector, size_t index) {
+void *get_value(const MathVector *math_vector, const size_t index) {
     if (math_vector == NULL || index >= math_vector->dimension) {
         errno = EINVAL;
         return NULL;
@@ -37,7 +36,7 @@ void *get_value(const MathVector *math_vector, size_t index) {
     return math_vector->data + math_vector->field_info->size * index;
 }
 
-bool set_value(MathVector *math_vector, size_t index, const void *value) {
+bool set_value(const MathVector *math_vector, const size_t index, const void *value) {
     if (math_vector == NULL || index >= math_vector->dimension || value == NULL) {
         errno = EINVAL;
         return false;
@@ -55,23 +54,23 @@ bool set_value(MathVector *math_vector, size_t index, const void *value) {
 static bool two_vectors_is_correct(const MathVector *V1, const MathVector *V2) {
     if (V1 != NULL && V2 != NULL &&
         V1->dimension == V2->dimension &&
-        V1->field_info->name == V2->field_info->name) {
+        V1->field_info == V2->field_info) {
         return true;
-        }
+    }
     return false;
 }
 
 static bool three_vectors_is_correct(const MathVector *V1, const MathVector *V2, const MathVector *V3) {
     if (V1 != NULL && V2 != NULL && V3 != NULL &&
         V1->dimension == V2->dimension && V2->dimension == V3->dimension &&
-        V1->field_info->name == V2->field_info->name &&
-        V2->field_info->name == V3->field_info->name) {
+        V1->field_info == V2->field_info &&
+        V2->field_info == V3->field_info) {
         return true;
     }
     return false;
 }
 
-bool sum(const MathVector *V1, const MathVector *V2, MathVector *res) {
+bool sum(const MathVector *V1, const MathVector *V2, const MathVector *res) {
     if (!three_vectors_is_correct(V1, V2, res)) {
         errno = EINVAL;
         return false;
@@ -103,12 +102,12 @@ bool dot_product(const MathVector *V1, const MathVector *V2, void *res, void *mu
     return true;
 }
 
-// bool destroy(MathVector *math_vector) {
-//     if (math_vector == NULL) {
-//         errno = EINVAL;
-//         return false;
-//     }
-//     free(math_vector->data);
-//     free(math_vector);
-//     return true;
-// }
+bool destroy(MathVector *math_vector) {
+    if (math_vector == NULL) {
+        errno = EINVAL;
+        return false;
+    }
+    free(math_vector->data);
+    free(math_vector);
+    return true;
+}

@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 #include <stdbool.h>
 
@@ -9,17 +8,34 @@
 #include "headers/FieldInfo.h"
 #include "headers/UsersStructs.h"
 
+void complex_mult_test() {
+    printf("complex_mult_test: ");
+
+    const Complex a = {1, 2};
+    const Complex b = {3, 4};
+
+    const void *f = &a;
+    const void *s = &b;
+    void *ans = malloc(sizeof(Complex));
+
+    const FieldInfo *field_info = get_comp_field_info();
+    field_info->mult(f, s, ans);
+    const Complex *res = ans;
+
+    assert(res->real == -5);
+    assert(res->imag == 10);
+
+    free(ans);
+}
+
 void create_int_vector_test() {
     printf("create_int_vector_test: ");
 
-    const FieldInfo *field_info = get_int_field_info();
-    assert(field_info != NULL);
-
     //Valid creation
-    MathVector *vector = create_math_vector(3, field_info);
+    MathVector *vector = create_math_vector(3, get_int_field_info());
     assert(vector != NULL);
     assert(vector->dimension == 3);
-    assert(vector->field_info == field_info);
+    assert(vector->field_info == get_int_field_info());
     assert(vector->data != NULL);
 
     //Invalid creation (NULL FieldInfo)
@@ -29,27 +45,25 @@ void create_int_vector_test() {
     assert(errno == EINVAL);
 
     printf("OK\n");
+
+    destroy(vector);
 }
 
 void set_get_value_test() {
-    printf("set_value_test: ");
-
-    const FieldInfo *field_info = get_int_field_info();
-    assert(field_info != NULL);
+    printf("set_get_value_test: ");
 
     //Valid creation
-    MathVector *vector = create_math_vector(3, field_info);
+    MathVector *vector = create_math_vector(3, get_int_field_info());
     assert(vector != NULL);
     assert(vector->dimension == 3);
-    assert(vector->field_info == field_info);
+    assert(vector->field_info == get_int_field_info());
     assert(vector->data != NULL);
 
     int value = 1;
-    int *check;
 
     //Valid set and get
     set_value(vector, 0, &value);
-    check = get_value(vector, 0);
+    const int *check = get_value(vector, 0);
     assert(*check == value);
 
     value = 2;
@@ -88,26 +102,22 @@ void set_get_value_test() {
     assert(errno == EINVAL);
 
     printf("OK\n");
+
+    destroy(vector);
 }
 
 void vector_sum_int_test() {
     printf("vector_sum_int_test: ");
 
-    const FieldInfo *int_field_info = get_int_field_info();
-    const FieldInfo *comp_field_info = get_comp_field_info();
-    assert(int_field_info != NULL);
-    assert(comp_field_info != NULL);
-
     //Valid creation
-    MathVector *vector = create_math_vector(3, int_field_info);
+    MathVector *vector = create_math_vector(3, get_int_field_info());
     assert(vector != NULL);
     assert(vector->dimension == 3);
-    assert(vector->field_info == int_field_info);
+    assert(vector->field_info == get_int_field_info());
     assert(vector->data != NULL);
     int value = 1;
-    int *check;
     set_value(vector, 0, &value);
-    check = get_value(vector, 0);
+    const int *check = get_value(vector, 0);
     assert(*check == value);
     value = 2;
     set_value(vector, 1, &value);
@@ -118,15 +128,14 @@ void vector_sum_int_test() {
     check = get_value(vector, 2);
     assert(*check == value);
 
-    MathVector *vector1 = create_math_vector(3, int_field_info);
+    MathVector *vector1 = create_math_vector(3, get_int_field_info());
     assert(vector1 != NULL);
     assert(vector1->dimension == 3);
-    assert(vector1->field_info == int_field_info);
+    assert(vector1->field_info == get_int_field_info());
     assert(vector1->data != NULL);
     int value1 = 4;
-    int *check1;
     set_value(vector1, 0, &value1);
-    check1 = get_value(vector1, 0);
+    const int *check1 = get_value(vector1, 0);
     assert(*check1 == value1);
     value1 = 5;
     set_value(vector1, 1, &value1);
@@ -138,7 +147,7 @@ void vector_sum_int_test() {
     assert(*check1 == value1);
 
     //Valid sum
-    MathVector *ans = create_math_vector(3, int_field_info);
+    MathVector *ans = create_math_vector(3, get_int_field_info());
 
     sum(vector, vector1, ans);
     check1 = get_value(ans, 0);
@@ -149,8 +158,8 @@ void vector_sum_int_test() {
     assert(*check1 == 9);
 
     //Invalid sum
-    MathVector *err1 = create_math_vector(4, int_field_info);
-    MathVector *err2 = create_math_vector(3, comp_field_info);
+    MathVector *err1 = create_math_vector(4, get_int_field_info());
+    MathVector *err2 = create_math_vector(3, get_comp_field_info());
 
     //NULL
     errno = 0;
@@ -168,43 +177,42 @@ void vector_sum_int_test() {
     assert(errno == EINVAL);
 
     printf("OK\n");
+
+    destroy(vector);
+    destroy(vector1);
+    destroy(ans);
+    destroy(err1);
+    destroy(err2);
 }
 
 void vector_sum_comp_test() {
     printf("vector_sum_comp_test: ");
 
-    const FieldInfo *int_field_info = get_int_field_info();
-    const FieldInfo *comp_field_info = get_comp_field_info();
-    assert(int_field_info != NULL);
-    assert(comp_field_info != NULL);
-
     //Valid creation
-    MathVector *vector = create_math_vector(1, comp_field_info);
+    MathVector *vector = create_math_vector(1, get_comp_field_info());
     assert(vector != NULL);
     assert(vector->dimension == 1);
-    assert(vector->field_info == comp_field_info);
+    assert(vector->field_info == get_comp_field_info());
     assert(vector->data != NULL);
-    Complex value = {1, 2};
-    Complex *check;
+    const Complex value = {1, 2};
     set_value(vector, 0, &value);
-    check = get_value(vector, 0);
+    const Complex *check = get_value(vector, 0);
     assert(check->real == value.real);
     assert(check->imag == value.imag);
 
-    MathVector *vector1 = create_math_vector(1, comp_field_info);
+    MathVector *vector1 = create_math_vector(1, get_comp_field_info());
     assert(vector1 != NULL);
     assert(vector1->dimension == 1);
-    assert(vector1->field_info == comp_field_info);
+    assert(vector1->field_info == get_comp_field_info());
     assert(vector1->data != NULL);
-    Complex value1 = {3, 4};
-    Complex *check1;
+    const Complex value1 = {3, 4};
     set_value(vector1, 0, &value1);
-    check1 = get_value(vector1, 0);
+    const Complex *check1 = get_value(vector1, 0);
     assert(check1->real == value1.real);
     assert(check1->imag == value1.imag);
 
     //Valid sum
-    MathVector *ans = create_math_vector(1, comp_field_info);
+    MathVector *ans = create_math_vector(1, get_comp_field_info());
 
     sum(vector, vector1, ans);
     check1 = get_value(ans, 0);
@@ -212,8 +220,8 @@ void vector_sum_comp_test() {
     assert(check1->imag == 6);
 
     //Invalid sum
-    MathVector *err1 = create_math_vector(4, comp_field_info);
-    MathVector *err2 = create_math_vector(1, int_field_info);
+    MathVector *err1 = create_math_vector(4, get_comp_field_info());
+    MathVector *err2 = create_math_vector(1, get_int_field_info());
 
     //NULL
     errno = 0;
@@ -231,26 +239,26 @@ void vector_sum_comp_test() {
     assert(errno == EINVAL);
 
     printf("OK\n");
+
+    destroy(vector);
+    destroy(vector1);
+    destroy(ans);
+    destroy(err1);
+    destroy(err2);
 }
 
 void vector_dot_product_int_test() {
     printf("vector_dot_product_int_test: ");
 
-    const FieldInfo *int_field_info = get_int_field_info();
-    const FieldInfo *comp_field_info = get_comp_field_info();
-    assert(int_field_info != NULL);
-    assert(comp_field_info != NULL);
-
     //Valid creation
-    MathVector *vector = create_math_vector(2, int_field_info);
+    MathVector *vector = create_math_vector(2, get_int_field_info());
     assert(vector != NULL);
     assert(vector->dimension == 2);
-    assert(vector->field_info == int_field_info);
+    assert(vector->field_info == get_int_field_info());
     assert(vector->data != NULL);
     int value = 1;
-    int *check;
     set_value(vector, 0, &value);
-    check = get_value(vector, 0);
+    const int *check = get_value(vector, 0);
     assert(*check == value);
     value = 2;
     set_value(vector, 1, &value);
@@ -260,19 +268,17 @@ void vector_dot_product_int_test() {
     //Valid dot product
     void *res = malloc(sizeof(int));
     void *mult = malloc(sizeof(int));
-    int *int_null = NULL;
-    int *int_res = NULL;
 
-    int_null = res;
+    int *int_null = res;
     *int_null = 0;
     dot_product(vector, vector, res, mult);
-    int_res = res;
+    const int *int_res = res;
 
     assert(*int_res == 5);
 
     //Invalid dot product
-    MathVector *err1 = create_math_vector(4, int_field_info);
-    MathVector *err2 = create_math_vector(2, comp_field_info);
+    MathVector *err1 = create_math_vector(4, get_int_field_info());
+    MathVector *err2 = create_math_vector(2, get_comp_field_info());
 
     //NULL
     errno = 0;
@@ -290,29 +296,29 @@ void vector_dot_product_int_test() {
     assert(errno == EINVAL);
 
     printf("OK\n");
+
+    free(res);
+    free(mult);
+    destroy(vector);
+    destroy(err1);
+    destroy(err2);
 }
 
 void vector_dot_product_comp_test() {
     printf("vector_dot_product_comp_test: ");
 
-    const FieldInfo *int_field_info = get_int_field_info();
-    const FieldInfo *comp_field_info = get_comp_field_info();
-    assert(int_field_info != NULL);
-    assert(comp_field_info != NULL);
-
     //Valid creation
-    MathVector *vector = create_math_vector(2, comp_field_info);
+    MathVector *vector = create_math_vector(2, get_comp_field_info());
     assert(vector != NULL);
     assert(vector->dimension == 2);
-    assert(vector->field_info == comp_field_info);
+    assert(vector->field_info == get_comp_field_info());
     assert(vector->data != NULL);
-    Complex value = {1, 2};
-    Complex *check;
+    const Complex value = {1, 2};
     set_value(vector, 0, &value);
-    check = get_value(vector, 0);
+    const Complex *check = get_value(vector, 0);
     assert(check->real == value.real);
     assert(check->imag == value.imag);
-    Complex value1 = {3, 4};
+    const Complex value1 = {3, 4};
     set_value(vector, 1, &value1);
     check = get_value(vector, 1);
     assert(check->real == value1.real);
@@ -321,21 +327,19 @@ void vector_dot_product_comp_test() {
     //Valid dot product
     void *res = malloc(sizeof(int));
     void *mult = malloc(sizeof(int));
-    Complex *comp_null = NULL;
-    Complex *comp_res = NULL;
 
-    comp_null = res;
+    Complex *comp_null = res;
     comp_null->real = 0;
     comp_null->imag = 0;
     dot_product(vector, vector, res, mult);
-    comp_res = res;
+    const Complex *comp_res = res;
 
     assert(comp_res->real == -10);
     assert(comp_res->imag == 28);
 
     //Invalid dot product
-    MathVector *err1 = create_math_vector(4, comp_field_info);
-    MathVector *err2 = create_math_vector(2, int_field_info);
+    MathVector *err1 = create_math_vector(4, get_comp_field_info());
+    MathVector *err2 = create_math_vector(2, get_int_field_info());
 
     //NULL
     errno = 0;
@@ -353,11 +357,18 @@ void vector_dot_product_comp_test() {
     assert(errno == EINVAL);
 
     printf("OK\n");
+
+    free(res);
+    free(mult);
+    destroy(vector);
+    destroy(err1);
+    destroy(err2);
 }
 
 int main() {
     printf("Starting DynamicArray tests\n\n");
 
+    complex_mult_test();
     create_int_vector_test();
     set_get_value_test();
     vector_sum_int_test();

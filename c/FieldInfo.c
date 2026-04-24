@@ -15,8 +15,8 @@ static bool int_assign(void *res, const void *arg) {
         return false;
     }
 
-    int *int_res = (int *) res;
-    int *int_arg = (int *) arg;
+    int *int_res = res;
+    const int *int_arg = arg;
     *int_res = *int_arg;
 
     return true;
@@ -28,8 +28,8 @@ static bool comp_assign(void *res, const void *arg) {
         return false;
     }
 
-    Complex *comp_res = (Complex *) res;
-    Complex *comp_arg = (Complex *) arg;
+    Complex *comp_res = res;
+    const Complex *comp_arg = arg;
     *comp_res = *comp_arg;
 
     return true;
@@ -41,9 +41,9 @@ static bool int_sum(const void *a, const void *b, void *res) {
         return false;
     }
 
-    int *int_a = (int *) a;
-    int *int_b = (int *) b;
-    int *int_sum = (int *) res;
+    const int *int_a = a;
+    const int *int_b = b;
+    int *int_sum = res;
 
     *int_sum = *int_a + *int_b;
 
@@ -56,9 +56,9 @@ static bool comp_sum(const void *a, const void *b, void *res) {
         return false;
     }
 
-    Complex *comp_a = (Complex *) a;
-    Complex *comp_b = (Complex *) b;
-    Complex *comp_sum = (Complex *) res;
+    const Complex *comp_a = a;
+    const Complex *comp_b = b;
+    Complex *comp_sum = res;
 
     comp_sum->real = comp_a->real + comp_b->real;
     comp_sum->imag = comp_a->imag + comp_b->imag;
@@ -72,9 +72,9 @@ static bool int_mult(const void *a, const void *b, void *res) {
         return false;
     }
 
-    int *int_a = (int *) a;
-    int *int_b = (int *) b;
-    int *int_mult = (int *) res;
+    const int *int_a = a;
+    const int *int_b = b;
+    int *int_mult = res;
 
     *int_mult = *int_a * *int_b;
 
@@ -87,9 +87,9 @@ static bool comp_mult(const void *a, const void *b, void *res) {
         return false;
     }
 
-    Complex *comp_a = (Complex *) a;
-    Complex *comp_b = (Complex *) b;
-    Complex *comp_mult = (Complex *) res;
+    const Complex *comp_a = a;
+    const Complex *comp_b = b;
+    Complex *comp_mult = res;
 
     comp_mult->real = comp_a->real * comp_b->real - comp_a->imag * comp_b->imag;
     comp_mult->imag = comp_a->imag * comp_b->real + comp_a->real * comp_b->imag;
@@ -107,7 +107,6 @@ const FieldInfo *get_int_field_info() {
         }
 
         int_field_info->size = sizeof(int);
-        int_field_info->name = "int";
         int_field_info->assign = int_assign;
         int_field_info->sum = int_sum;
         int_field_info->mult = int_mult;
@@ -126,7 +125,6 @@ const FieldInfo *get_comp_field_info() {
         }
 
         comp_field_info->size = sizeof(Complex);
-        comp_field_info->name = "Complex";
         comp_field_info->assign = comp_assign;
         comp_field_info->sum = comp_sum;
         comp_field_info->mult = comp_mult;

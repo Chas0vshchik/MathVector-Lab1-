@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "../headers/FieldInfo.h"
 #include "../headers/MathVector.h"
@@ -12,16 +11,12 @@
 static MathVector *vectors[NUMBER_OF_VECTORS];
 static int current_size = 0;
 
-extern const FieldInfo *get_int_field_info(void);
-extern const FieldInfo *get_comp_field_info(void);
-
 static int read_int(const char *phrase) {
     int value = 0;
-    int result;
 
     while (1) {
         printf("%s", phrase);
-        result = scanf("%d", &value);
+        const int result = scanf("%d", &value);
         if (result == 1) {
             while (getchar() != '\n') {}
             return value;
@@ -43,9 +38,9 @@ static void print_vector(const int index) {
         printf("Invalid index.\n\n");
     }
 
-    if (strcmp(vectors[index]->field_info->name, "int") == 0) {
+    if (vectors[index]->field_info == get_int_field_info()) {
         printf("Vector number %d: [", index);
-        int *elem = NULL;
+        const int *elem = NULL;
         for (int i = 0; i < vectors[index]->dimension - 1; i++) {
             elem = get_value(vectors[index], i);
             printf("%d, ", *elem);
@@ -56,9 +51,9 @@ static void print_vector(const int index) {
         return;
     }
 
-    if (strcmp(vectors[index]->field_info->name, "Complex") == 0) {
+    if (vectors[index]->field_info == get_comp_field_info()) {
         printf("Vector number %d: [", index);
-        Complex *elem = NULL;
+        const Complex *elem = NULL;
         for (int i = 0; i < vectors[index]->dimension - 1; i++) {
             elem = get_value(vectors[index], i);
             printf("%d", elem->real);
@@ -73,13 +68,10 @@ static void print_vector(const int index) {
             printf("+");
         }
         printf("%di]\n", elem->imag);
-
-        return;
     }
 }
 
 void ui() {
-    int choice;
     int dimension;
     int int_value;
     int V1, V2;
@@ -87,8 +79,8 @@ void ui() {
     void *mult = malloc(sizeof(int));
     int *int_null = NULL;
     Complex *comp_null = NULL;
-    int *int_res = NULL;
-    Complex *comp_res = NULL;
+    const int *int_res = NULL;
+    const Complex *comp_res = NULL;
     Complex comp_value;
 
     while (1) {
@@ -100,7 +92,7 @@ void ui() {
         printf("5. Dot product for two vectors\n");
         printf("0. Exit\n\n");
 
-        choice = read_int("Enter your choice: ");
+        const int choice = read_int("Enter your choice: ");
 
         switch (choice) {
             case 1:
@@ -175,7 +167,7 @@ void ui() {
                         break;
                     }
                 }
-                if (strcmp(vectors[V1]->field_info->name, vectors[V2]->field_info->name) != 0) {
+                if (vectors[V1]->field_info == vectors[V2]->field_info) {
                     printf("The program cannot work with vectors of different types. \n\n");
                     break;
                 }
@@ -218,7 +210,7 @@ void ui() {
                         break;
                     }
                 }
-                if (strcmp(vectors[V1]->field_info->name, vectors[V2]->field_info->name) != 0) {
+                if (vectors[V1]->field_info == vectors[V2]->field_info) {
                     printf("The program cannot work with vectors of different types. \n\n");
                     break;
                 }
@@ -227,7 +219,7 @@ void ui() {
                     break;
                 }
 
-                if (strcmp(vectors[V1]->field_info->name, "int") == 0) {
+                if (vectors[V1]->field_info == get_int_field_info()) {
                     int_null = res;
                     *int_null = 0;
                     dot_product(vectors[V1], vectors[V2], res, mult);
@@ -236,7 +228,7 @@ void ui() {
                     printf("%d\n\n", *int_res);
                     break;
                 }
-                if (strcmp(vectors[V1]->field_info->name, "Complex") == 0) {
+                if (vectors[V1]->field_info == get_comp_field_info()) {
                     comp_null = res;
                     comp_null->real = 0;
                     comp_null->imag = 0;
@@ -252,7 +244,13 @@ void ui() {
                 }
                 break;
             case 0:
+                for (int i = 0; i < current_size; i++) {
+                    destroy(vectors[i]);
+                }
                 return;
+            default:
+                printf("Invalid choice. \n\n");
+                break;
         }
     }
 }
