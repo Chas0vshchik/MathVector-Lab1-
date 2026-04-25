@@ -247,6 +247,8 @@ void ui() {
                 for (int i = 0; i < current_size; i++) {
                     destroy(vectors[i]);
                 }
+                free(res);
+                free(mult);
                 return;
             default:
                 printf("Invalid choice. \n\n");
